@@ -5,15 +5,14 @@ on:
     branches: [ "main" ]
     paths-ignore:
       - "**.md"
-  workflow_dispatch:  # 支持手动触发
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -22,56 +21,14 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Load Google Services File
-        if: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 != '' }}
-        env:
-          DATA: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
-        run: echo $DATA | base64 -di > app/google-services.json
-
       - name: Create placeholder google-services.json
-        if: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 == '' }}
         run: |
-          cat > app/google-services.json << 'EOF'
-          {
-            "project_info": {
-              "project_number": "0",
-              "project_id": "placeholder",
-              "storage_bucket": "placeholder"
-            },
-            "client": [
-              {
-                "client_info": {
-                  "mobilesdk_app_id": "1:0:android:0000000000000000",
-                  "android_client_info": {
-                    "package_name": "com.yenaly.han1meviewer"
-                  }
-                },
-                "oauth_client": [],
-                "api_key": [
-                  {
-                    "current_key": "PLACEHOLDER_API_KEY"
-                  }
-                ],
-                "services": {
-                  "analytics_service": {
-                    "status": 2
-                  },
-                  "appinvite_service": {
-                    "status": 2
-                  },
-                  "ads_service": {
-                    "status": 2
-                  }
-                }
-              }
-            ]
-          }
-          EOF
+          echo '{"project_info":{"project_number":"0","project_id":"placeholder"},"client":[{"client_info":{"mobilesdk_app_id":"1:0:android:0000000000000000","android_client_info":{"package_name":"com.yenaly.han1meviewer"}},"oauth_client":[],"api_key":[{"current_key":"PLACEHOLDER"}],"services":{"analytics_service":{"status":2}}}]}' > app/google-services.json
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build Debug APK with Gradle
+      - name: Build Debug APK
         run: ./gradlew assembleDebug
         env:
           HA1_VERSION_SOURCE: 'ci'
@@ -79,5 +36,5 @@ jobs:
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: Han1meViewer-debug-${{ github.sha }}
+          name: Han1meViewer-debug
           path: app/build/outputs/apk/debug/*.apk
