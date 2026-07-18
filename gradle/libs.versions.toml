@@ -9,7 +9,7 @@ coreSplashscreen = "1.2.0"
 kotlin = "2.3.21"
 materialIconsCore = "1.7.8"
 serializationPlugin = "2.3.21"
-ksp = "2.3.2"
+ksp = "2.3.10"
 drawerlayout = "1.2.0"
 safeargs = "2.9.8"
 # Dependencies
