@@ -56,6 +56,12 @@ jobs:
           }
           JSONEOF
 
+      - name: Override with real Google Services file
+        if: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 != '' }}
+        env:
+          DATA: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+        run: echo $DATA | base64 -di > app/google-services.json
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
