@@ -5,6 +5,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.remoteconfig.remoteConfig
 import com.yenaly.han1meviewer.BuildConfig
 import com.yenaly.han1meviewer.FirebaseConstants
+import com.yenaly.han1meviewer.HanimeApplication
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.logic.model.github.CommitComparison
 import com.yenaly.han1meviewer.logic.model.github.Latest
@@ -38,7 +39,9 @@ object HUpdater {
      */
     suspend fun checkForUpdate(forceCheck: Boolean = false): Latest? {
         if (forceCheck || Preferences.isUpdateDialogVisible) {
-            if (Preferences.useCIUpdateChannel && Firebase.remoteConfig.getBoolean(FirebaseConstants.ENABLE_CI_UPDATE)) {
+            val ciUpdateEnabled = HanimeApplication.isFirebaseAvailable
+                && try { Firebase.remoteConfig.getBoolean(FirebaseConstants.ENABLE_CI_UPDATE) } catch (_: Exception) { true }
+            if (Preferences.useCIUpdateChannel && ciUpdateEnabled) {
                 val curSha = BuildConfig.COMMIT_SHA
                 // 特殊情况下才用注释部分，一般情况下 branch 都是固定的，要不然多一次
                 // request 会对我的 API Token 造成负担。

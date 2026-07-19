@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.database.FirebaseDatabase
 import com.yenaly.han1meviewer.FIREBASE_REALTIME_DATABASE
+import com.yenaly.han1meviewer.HanimeApplication
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SAVED_USER_ID
@@ -46,7 +47,18 @@ class HomePageViewModel: ViewModel() {
     private val _homePageFlow = MutableStateFlow<PageState<HomeData>>(PageState.Loading)
     val homePageFlow = _homePageFlow.asStateFlow()
 
-    private val database = FirebaseDatabase.getInstance(FIREBASE_REALTIME_DATABASE)
+    private val database by lazy {
+        if (HanimeApplication.isFirebaseAvailable) {
+            try {
+                FirebaseDatabase.getInstance(FIREBASE_REALTIME_DATABASE)
+            } catch (e: Exception) {
+                Log.e("HomePageVM", "Firebase Database init failed", e)
+                null
+            }
+        } else {
+            null
+        }
+    }
 
     private val _sessionExpiredMessage = MutableSharedFlow<SessionExpiredMessage>()
     val sessionExpiredMessage = _sessionExpiredMessage
@@ -108,6 +120,10 @@ class HomePageViewModel: ViewModel() {
     }
     private suspend fun fetchAnnouncementsFromFirebase(): List<Announcement> =
         suspendCancellableCoroutine { continuation ->
+            val db = database ?: run {
+                continuation.resume(emptyList())
+                return@suspendCancellableCoroutine
+            }
             val lastDismissTime = getSpValue("last_dismiss_time", 0L, "setting_pref")
             val shouldShowAnno = System.currentTimeMillis() - lastDismissTime > 24 * 60 * 60 * 1000L
             if (!shouldShowAnno) {
@@ -115,7 +131,7 @@ class HomePageViewModel: ViewModel() {
                 return@suspendCancellableCoroutine
             }
 
-            database.getReference("announcements").get()
+            db.getReference("announcements").get()
                 .addOnSuccessListener { snapshot ->
                     val list = mutableListOf<Announcement>()
                     if (snapshot.exists()) {

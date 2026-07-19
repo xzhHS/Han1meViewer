@@ -301,7 +301,9 @@ fun HomeSettingsRouteScreen(
             }
             saveBoolean(HOME_USE_ANALYTICS, true)
             refreshKey++
-            Firebase.analytics.setAnalyticsCollectionEnabled(true)
+            if (HanimeApplication.isFirebaseAvailable) {
+                try { Firebase.analytics.setAnalyticsCollectionEnabled(true) } catch (_: Exception) { }
+            }
         },
         onUseLockScreenChange = { value ->
             if (value) {
@@ -453,7 +455,9 @@ fun HomeSettingsRouteScreen(
                 TextButton(onClick = {
                     saveBoolean(HOME_USE_ANALYTICS, false)
                     refreshKey++
-                    Firebase.analytics.setAnalyticsCollectionEnabled(false)
+                    if (HanimeApplication.isFirebaseAvailable) {
+                        try { Firebase.analytics.setAnalyticsCollectionEnabled(false) } catch (_: Exception) { }
+                    }
                     showAnalyticsDialog = false
                 }) {
                     Text(stringResource(R.string.deny))

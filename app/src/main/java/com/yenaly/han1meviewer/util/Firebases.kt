@@ -7,18 +7,22 @@ import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
 import com.google.firebase.analytics.logEvent
+import com.yenaly.han1meviewer.HanimeApplication
 
 fun Activity.logScreenViewEvent(fragment: Fragment) {
     logScreenViewEvent(fragment.javaClass.simpleName)
 }
 
 fun Activity.logScreenViewEvent(screenClassName: String) {
-    Firebase.analytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW) {
-        // example: MainActivity-HomeRouteScreen
-        val screenName = this@logScreenViewEvent.javaClass.simpleName +
-            "-" + screenClassName
-        Log.d("logScreenViewEvent", "screenName: $screenName")
-        param(FirebaseAnalytics.Param.SCREEN_NAME, screenName)
-        param(FirebaseAnalytics.Param.SCREEN_CLASS, screenClassName)
-    }
+    if (!HanimeApplication.isFirebaseAvailable) return
+    try {
+        Firebase.analytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW) {
+            // example: MainActivity-HomeRouteScreen
+            val screenName = this@logScreenViewEvent.javaClass.simpleName +
+                "-" + screenClassName
+            Log.d("logScreenViewEvent", "screenName: $screenName")
+            param(FirebaseAnalytics.Param.SCREEN_NAME, screenName)
+            param(FirebaseAnalytics.Param.SCREEN_CLASS, screenClassName)
+        }
+    } catch (_: Exception) { }
 }

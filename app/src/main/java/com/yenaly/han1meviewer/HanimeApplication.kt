@@ -32,6 +32,15 @@ class HanimeApplication : YenalyApplication() {
 
     companion object {
         const val TAG = "HanimeApplication"
+
+        /**
+         * 标志 Firebase 是否可用（初始化成功）。
+         * 当使用占位 google-services.json 构建时，Firebase 不可用，
+         * 所有 Firebase API 调用都应检查此标志以避免崩溃。
+         */
+        @Volatile
+        var isFirebaseAvailable: Boolean = false
+            private set
     }
 
     /**
@@ -94,8 +103,10 @@ class HanimeApplication : YenalyApplication() {
                 }
             }
             Firebase.database.setPersistenceEnabled(true)
+            isFirebaseAvailable = true
         } catch (e: Exception) {
             Log.e(TAG, "Firebase init failed, running without Firebase", e)
+            isFirebaseAvailable = false
         }
     }
 
