@@ -60,7 +60,7 @@
             android:authorities="${applicationId}.androidx-startup"
             android:exported="false"
             android:initOrder="114514"
-            tools:node="replace">
+            tools:node="merge">
             <meta-data
                 android:name="com.yenaly.han1meviewer.HInitializer"
                 android:value="androidx.startup" />
