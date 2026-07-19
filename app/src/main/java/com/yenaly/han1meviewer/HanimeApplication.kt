@@ -126,12 +126,11 @@ class HanimeApplication : YenalyApplication() {
             // 占位 key 即使格式合法也无法真正连接 Google 服务，提前跳过避免
             // Firebase SDK 后台线程因 API key 校验失败而崩溃
             val apiKey = app.options.apiKey ?: ""
-            val projectNumber = app.options.projectNumber ?: ""
-            if (apiKey.contains("PLACEHOLDER") || projectNumber == "0") {
+            if (apiKey.contains("PLACEHOLDER")) {
                 Log.w(
                     TAG,
-                    "Placeholder Firebase config detected (apiKey contains PLACEHOLDER, " +
-                        "projectNumber=$projectNumber). Skipping all Firebase init."
+                    "Placeholder Firebase config detected (apiKey=$apiKey). " +
+                        "Skipping all Firebase init."
                 )
                 isFirebaseAvailable = false
                 return
