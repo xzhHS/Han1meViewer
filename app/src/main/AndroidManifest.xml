@@ -28,17 +28,6 @@
     <application
         android:name=".HanimeApplication"
         android:allowBackup="true"
-
-        <!-- 移除 Firebase 自动初始化，改为手动在 Application 中 try-catch 处理 -->
-        <provider
-            android:name="com.google.firebase.provider.FirebaseInitProvider"
-            tools:node="remove" />
-        <provider
-            android:name="com.google.firebase.crashlytics.FirebaseCrashlyticsInitProvider"
-            tools:node="remove" />
-        <provider
-            android:name="com.google.firebase.perf.provider.FirebasePerfProvider"
-            tools:node="remove" />
         android:hasFragileUserData="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:enableOnBackInvokedCallback="true"
