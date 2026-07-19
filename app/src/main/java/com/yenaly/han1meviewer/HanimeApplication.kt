@@ -7,6 +7,7 @@ import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationManagerCompat
 import com.google.android.material.color.DynamicColors
 import com.google.firebase.Firebase
+import com.google.firebase.FirebaseApp
 import com.google.firebase.analytics.analytics
 import com.google.firebase.crashlytics.crashlytics
 import com.google.firebase.crashlytics.setCustomKeys
@@ -62,34 +63,40 @@ class HanimeApplication : YenalyApplication() {
     }
 
     private fun initFirebase() {
-        // 用于处理 Firebase Analytics 初始化
-        Firebase.analytics.setAnalyticsCollectionEnabled(Preferences.isAnalyticsEnabled)
-        // 用于处理 Firebase Crashlytics 初始化
-        Firebase.crashlytics.apply {
-            isCrashlyticsCollectionEnabled = !BuildConfig.DEBUG
-            setCustomKeys {
-                key(
-                    FirebaseConstants.APP_LANGUAGE,
-                    LanguageHelper.preferredLanguage.toLanguageTag()
-                )
-                key(
-                    FirebaseConstants.VERSION_SOURCE,
-                    BuildConfig.VERSION_SOURCE
-                )
+        try {
+            // 手动初始化 Firebase（已禁用自动初始化 ContentProvider）
+            FirebaseApp.initializeApp(this)
+            // 用于处理 Firebase Analytics 初始化
+            Firebase.analytics.setAnalyticsCollectionEnabled(Preferences.isAnalyticsEnabled)
+            // 用于处理 Firebase Crashlytics 初始化
+            Firebase.crashlytics.apply {
+                isCrashlyticsCollectionEnabled = !BuildConfig.DEBUG
+                setCustomKeys {
+                    key(
+                        FirebaseConstants.APP_LANGUAGE,
+                        LanguageHelper.preferredLanguage.toLanguageTag()
+                    )
+                    key(
+                        FirebaseConstants.VERSION_SOURCE,
+                        BuildConfig.VERSION_SOURCE
+                    )
+                }
             }
-        }
-        // 用于处理 Firebase Remote Config 初始化
-        Firebase.remoteConfig.apply {
-            setConfigSettingsAsync(remoteConfigSettings {
-                minimumFetchIntervalInSeconds = if (BuildConfig.DEBUG) 0 else 3 * 60 * 60
-                fetchTimeoutInSeconds = 10
-            })
-            setDefaultsAsync(FirebaseConstants.remoteConfigDefaults)
-            fetchAndActivate().addOnCompleteListener {
-                AppViewModel.getLatestVersion(delayMillis = 200)
+            // 用于处理 Firebase Remote Config 初始化
+            Firebase.remoteConfig.apply {
+                setConfigSettingsAsync(remoteConfigSettings {
+                    minimumFetchIntervalInSeconds = if (BuildConfig.DEBUG) 0 else 3 * 60 * 60
+                    fetchTimeoutInSeconds = 10
+                })
+                setDefaultsAsync(FirebaseConstants.remoteConfigDefaults)
+                fetchAndActivate().addOnCompleteListener {
+                    AppViewModel.getLatestVersion(delayMillis = 200)
+                }
             }
+            Firebase.database.setPersistenceEnabled(true)
+        } catch (e: Exception) {
+            Log.e(TAG, "Firebase init failed, running without Firebase", e)
         }
-        Firebase.database.setPersistenceEnabled(true)
     }
 
     private fun initNotificationChannel() {
