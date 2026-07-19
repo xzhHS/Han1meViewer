@@ -47,11 +47,19 @@ object AppViewModel : YenalyViewModel(application), IHCsrfToken {
 
     init {
         // 取消，防止每次启动都有残留的更新任务
-        WorkManager.getInstance(application).pruneWork()
+        try {
+            WorkManager.getInstance(application).pruneWork()
+        } catch (e: Exception) {
+            Log.e("AppViewModel", "pruneWork failed", e)
+        }
 
         viewModelScope.launch(Dispatchers.IO) {
-            // HanimeDownloadManager.init()
-            HanimeDownloadManagerV2.init()
+            try {
+                // HanimeDownloadManager.init()
+                HanimeDownloadManagerV2.init()
+            } catch (e: Exception) {
+                Log.e("AppViewModel", "HanimeDownloadManagerV2.init failed", e)
+            }
         }
 
         viewModelScope.launch(Dispatchers.Main) {

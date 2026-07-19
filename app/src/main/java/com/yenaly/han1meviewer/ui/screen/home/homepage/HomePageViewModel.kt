@@ -67,8 +67,12 @@ class HomePageViewModel: ViewModel() {
 
     init {
         viewModelScope.launch {
-            // 初始化默认已下载分组，防止[FOREIGN KEY constraint failed]
-            DatabaseRepo.HanimeDownload.insertDefaultGroup()
+            try {
+                // 初始化默认已下载分组，防止[FOREIGN KEY constraint failed]
+                DatabaseRepo.HanimeDownload.insertDefaultGroup()
+            } catch (e: Exception) {
+                Log.e("HomePageVM", "insertDefaultGroup failed", e)
+            }
         }
     }
 
