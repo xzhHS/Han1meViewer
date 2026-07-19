@@ -44,16 +44,14 @@ fun UsageNoticeDialog(
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
                 Lifecycle.Event.ON_RESUME -> {
-                    remainingSeconds = 20
+                    // 只在 ON_RESUME 时开始/继续倒计时，不再重置
+                    // 这样即使应用短暂后台化也不会丢失进度
                     isResumed = true
-                    resetVersion++
                 }
 
                 Lifecycle.Event.ON_PAUSE,
                 Lifecycle.Event.ON_STOP -> {
-                    remainingSeconds = 20
                     isResumed = false
-                    resetVersion++
                 }
 
                 else -> Unit
@@ -107,7 +105,7 @@ fun UsageNoticeDialog(
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-private fun UsageNoticeDialogPreview(){
+private fun UsageNoticeDialogPreview() {
     ComponentPreview {
         UsageNoticeDialog(
             visible = true,

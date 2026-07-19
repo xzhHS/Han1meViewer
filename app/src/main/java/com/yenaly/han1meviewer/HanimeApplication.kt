@@ -50,25 +50,67 @@ class HanimeApplication : YenalyApplication() {
 
     override fun onCreate() {
         super.onCreate()
-        ThemeUtils.applyDarkModeFromPreferences(this)
-        if (Preferences.useDynamicColor){
-            DynamicColors.applyToActivitiesIfAvailable(this)
+
+        // 标记应用启动时间，用于 HCrashHandler 检测重启循环
+        HCrashHandler.markAppStart()
+
+        try {
+            ThemeUtils.applyDarkModeFromPreferences(this)
+        } catch (e: Exception) {
+            Log.e(TAG, "Theme init failed", e)
         }
-        ProxySelector.setDefault(HProxySelector())
-        HProxySelector.rebuildNetwork()
+
+        if (Preferences.useDynamicColor) {
+            try {
+                DynamicColors.applyToActivitiesIfAvailable(this)
+            } catch (e: Exception) {
+                Log.e(TAG, "DynamicColors init failed", e)
+            }
+        }
+
+        try {
+            ProxySelector.setDefault(HProxySelector())
+            HProxySelector.rebuildNetwork()
+        } catch (e: Exception) {
+            Log.e(TAG, "ProxySelector init failed", e)
+        }
+
         initFirebase()
         initNotificationChannel()
-        MPVLib.create(applicationContext)
-        MPVLib.init()
 
-        if (AnimeShaders.copyShaderAssets(applicationContext) <= 0) {
-            Log.w(TAG, "Shader 复制失败")
+        try {
+            MPVLib.create(applicationContext)
+        } catch (e: Exception) {
+            Log.e(TAG, "MPVLib.create failed", e)
         }
-        if (AnimeShaders.copyCertAssets(applicationContext) <= 0) {
-            Log.w(TAG, "cert 复制失败")
+        try {
+            MPVLib.init()
+        } catch (e: Exception) {
+            Log.e(TAG, "MPVLib.init failed", e)
         }
-        val selected = Preferences.fakeLauncherIcon
-        switchLauncher(selected)
+
+        try {
+            if (AnimeShaders.copyShaderAssets(applicationContext) <= 0) {
+                Log.w(TAG, "Shader 复制失败")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Shader copy failed", e)
+        }
+
+        try {
+            if (AnimeShaders.copyCertAssets(applicationContext) <= 0) {
+                Log.w(TAG, "cert 复制失败")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Cert copy failed", e)
+        }
+
+        try {
+            val selected = Preferences.fakeLauncherIcon
+            switchLauncher(selected)
+        } catch (e: Exception) {
+            Log.e(TAG, "switchLauncher failed", e)
+        }
     }
 
     private fun initFirebase() {
@@ -111,20 +153,25 @@ class HanimeApplication : YenalyApplication() {
     }
 
     private fun initNotificationChannel() {
-        val nm = NotificationManagerCompat.from(this)
+        try {
+            val nm = NotificationManagerCompat.from(this)
 
-        val hanimeDownloadChannel = NotificationChannelCompat.Builder(
-            DOWNLOAD_NOTIFICATION_CHANNEL,
-            NotificationManagerCompat.IMPORTANCE_HIGH
-        ).setName("Hanime Download").build()
-        nm.createNotificationChannel(hanimeDownloadChannel)
+            val hanimeDownloadChannel = NotificationChannelCompat.Builder(
+                DOWNLOAD_NOTIFICATION_CHANNEL,
+                NotificationManagerCompat.IMPORTANCE_HIGH
+            ).setName("Hanime Download").build()
+            nm.createNotificationChannel(hanimeDownloadChannel)
 
-        val appUpdateChannel = NotificationChannelCompat.Builder(
-            UPDATE_NOTIFICATION_CHANNEL,
-            NotificationManagerCompat.IMPORTANCE_HIGH
-        ).setName("App Update").build()
-        nm.createNotificationChannel(appUpdateChannel)
+            val appUpdateChannel = NotificationChannelCompat.Builder(
+                UPDATE_NOTIFICATION_CHANNEL,
+                NotificationManagerCompat.IMPORTANCE_HIGH
+            ).setName("App Update").build()
+            nm.createNotificationChannel(appUpdateChannel)
+        } catch (e: Exception) {
+            Log.e(TAG, "NotificationChannel init failed", e)
+        }
     }
+
     fun switchLauncher(alias: String) {
         val pm = packageManager
 
