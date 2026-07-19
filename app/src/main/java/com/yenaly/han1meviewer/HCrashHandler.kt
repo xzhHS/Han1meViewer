@@ -38,6 +38,21 @@ object HCrashHandler : Thread.UncaughtExceptionHandler {
         e.printStackTrace()
         Log.e(TAG, "Uncaught exception in thread ${t.name}", e)
 
+        // CI 构建使用占位 google-services.json，Firebase SDK 后台线程
+        // 校验 API key 时会抛出 IllegalArgumentException。
+        // 这类异常发生在后台线程（pool-*-thread-*），不影响主线程 UI，
+        // 直接忽略即可让应用继续运行，用户可以在使用须知倒计时结束后正常进入。
+        if (e is IllegalArgumentException &&
+            e.message?.contains("valid API key") == true
+        ) {
+            Log.w(
+                TAG,
+                "Ignoring Firebase API key exception from background thread ${t.name}. " +
+                    "This is expected when using placeholder google-services.json."
+            )
+            return
+        }
+
         val uptime = System.currentTimeMillis() - appStartTime
         if (uptime < MIN_UPTIME_MS) {
             // 启动后很快崩溃，可能是重启循环，直接退出
