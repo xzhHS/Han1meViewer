@@ -116,7 +116,27 @@ class HanimeApplication : YenalyApplication() {
     private fun initFirebase() {
         try {
             // 手动初始化 Firebase（已禁用自动初始化 ContentProvider）
-            FirebaseApp.initializeApp(this)
+            val app = FirebaseApp.initializeApp(this)
+            if (app == null) {
+                Log.w(TAG, "FirebaseApp.initializeApp returned null, skipping Firebase init")
+                return
+            }
+
+            // 检测 CI 占位配置：如果 API key 是占位符，跳过所有 Firebase 初始化
+            // 占位 key 即使格式合法也无法真正连接 Google 服务，提前跳过避免
+            // Firebase SDK 后台线程因 API key 校验失败而崩溃
+            val apiKey = app.options.apiKey ?: ""
+            val projectNumber = app.options.projectNumber ?: ""
+            if (apiKey.contains("PLACEHOLDER") || projectNumber == "0") {
+                Log.w(
+                    TAG,
+                    "Placeholder Firebase config detected (apiKey contains PLACEHOLDER, " +
+                        "projectNumber=$projectNumber). Skipping all Firebase init."
+                )
+                isFirebaseAvailable = false
+                return
+            }
+
             // 用于处理 Firebase Analytics 初始化
             Firebase.analytics.setAnalyticsCollectionEnabled(Preferences.isAnalyticsEnabled)
             // 用于处理 Firebase Crashlytics 初始化
