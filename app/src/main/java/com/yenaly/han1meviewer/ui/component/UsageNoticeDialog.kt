@@ -35,7 +35,7 @@ fun UsageNoticeDialog(
 ) {
     if (!visible) return
 
-    var remainingSeconds by remember { mutableIntStateOf(20) }
+    var remainingSeconds by remember { mutableIntStateOf(5) }
     var isResumed by remember { mutableStateOf(true) }
     var resetVersion by remember { mutableIntStateOf(0) }
     val lifecycleOwner = LocalLifecycleOwner.current
